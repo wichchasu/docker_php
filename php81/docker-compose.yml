@@ -1,0 +1,145 @@
+version: "3.7"
+
+networks:
+  php81.network:
+    driver: bridge
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+      target: ${APP_BUILD_TARGET:-development}
+    container_name: php81.php
+    depends_on:
+      - mysql
+    # - postgres
+    # - redis
+    # - mariadb
+    networks:
+      - php81.network
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/var/www/app.dev
+
+  nginx:
+    build: ./docker/nginx
+    container_name: php81.nginx
+    restart: always
+    tty: true
+    depends_on:
+      - php
+      - mysql
+      # - postgres
+      # - redis
+      # - mariadb
+    ports:
+      - "80:80"
+      - "433:433"
+    volumes:
+      - .:/var/www/app.dev
+    networks:
+      - php81.network
+
+  # apache:
+  #   build: ./docker/apache
+  #   restart: always
+  #   container_name: php81.apache
+  #   networks:
+  #     - php81.network
+  #   depends_on:
+  #     - php
+  #     # - mysql
+  #     # - postgres
+  #     # - redis
+  #     # - mariadb
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - .:/var/www/app.dev
+
+  #  mariadb:
+  #    image: mariadb
+  #    tty: true
+  #    restart: always
+  #    container_name: php81.mariadb
+  #    networks:
+  #      - php81.network
+  #    ports:
+  #      - '3306:3306'
+  #    volumes:
+  #      - './docker/mysql/config/mariadb.cnf:/etc/mysql/conf.d/custom.cnf:ro'
+  #      - './docker/mysql/dbdata:/var/lib/mysql'
+  #    environment:
+  #      - MYSQL_PASSWORD=root
+  #      - MYSQL_ROOT_PASSWORD=root
+  #      - MYSQL_DATABASE=development
+
+  mysql:
+    build: ./docker/mysql
+    tty: true
+    restart: always
+    container_name: php81.mysql
+    networks:
+      - php81.network
+    ports:
+      - "3306:3306"
+    volumes:
+      - "./docker/mysql/config/mysql.cnf:/etc/mysql/conf.d/custom.cnf:ro"
+      - "./docker/mysql/dbdata:/var/lib/mysql"
+    environment:
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=1234
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=development
+
+  phpmyadmin:
+    image: library/phpmyadmin
+    container_name: php81.phpmyadmin
+    tty: true
+    networks:
+      - php81.network
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOSTS: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 1234
+      MYSQL_ROOT_PASSWORD: root    
+    ports:
+      - '8888:80'
+
+  # postgres:
+  #   build: ./docker/postgres
+  #   container_name: php81.postgres
+  #   tty: true
+  #   restart: always
+  #   networks:
+  #     - php81.network
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - "./docker/postgres/dbdata:/var/lib/postgresql/data"
+  #   environment:
+  #     - POSTGRES_USER=root
+  #     - POSTGRES_PASSWORD=root
+  #     - POSTGRES_DB=development
+
+  # redis:
+  #   image: bitnami/redis:latest
+  #   restart: always
+  #   tty: true
+  #   container_name: php81.redis
+  #   volumes:
+  #     - ./docker/redis:/bitnami/redis/data
+  #   networks:
+  #     - php81.network
+  #   environment:
+  #     - ALLOW_EMPTY_PASSWORD=no
+  #     - REDIS_PASSWORD=root
+  #   ports:
+  #     - "6379:6379"
