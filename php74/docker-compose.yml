@@ -19,7 +19,7 @@ services:
     networks:
       - php74.network
     ports:
-      - "9000:9000"
+      - "${PHP_PORTS}:9000"
     volumes:
       - .:/var/www/app.dev
 
@@ -35,8 +35,8 @@ services:
       # - redis
       # - mariadb
     ports:
-      - "80:80"
-      - "433:433"
+      - "${WEB_PORTS}:80"
+      - "${SSL_PORTS}:433"
     volumes:
       - .:/var/www/app.dev
     networks:
@@ -85,16 +85,16 @@ services:
     networks:
       - php74.network
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORTS}:3306"
     volumes:
       - "./docker/mysql/config/mysql.cnf:/etc/mysql/conf.d/custom.cnf:ro"
       - "./docker/mysql/dbdata:/var/lib/mysql"
       - ./docker/mysql/sqlfile:/docker-entrypoint-initdb.d
     environment:
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=1234
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=development
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
 
   phpmyadmin:
     image: library/phpmyadmin
@@ -108,11 +108,11 @@ services:
       PMA_HOSTS: mysql
       PMA_PORT: 3306
       PMA_ARBITRARY: 1
-      MYSQL_USER: user
-      MYSQL_PASSWORD: 1234
-      MYSQL_ROOT_PASSWORD: root    
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_USER}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}    
     ports:
-      - '8888:80'
+      - '${PHPMYADMIN_WEBPORTS}:80'
 
   # postgres:
   #   build: ./docker/postgres
