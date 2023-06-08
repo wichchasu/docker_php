@@ -1,5 +1,5 @@
 # docker_php
-php7.4 php8.1 + nginx + mysql and phpmyadmin
+php7.4 php8.1 + nginx + mysql and phpmyadmin [config in .env]
 
 # Installation
 * 1.Folder: php74, php81 
